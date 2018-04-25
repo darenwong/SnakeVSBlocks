@@ -103,25 +103,23 @@ def layerpara(totalscor):
     if lowercap >= 10:
         lowercap = 10
         
-    for i in range(len(xs) - 1):
-            negpoints.append(random.randrange(lowercap, uppercap))
-    negpoints.append(random.randrange(1, 4))
+    for i in range(len(xs)):
+        negpoints.append(random.randrange(lowercap, uppercap))
+    negpoints[luck2] = (random.randrange(1, 4))
+            
     if luck == 1:
         negpoints[luck2] = 0
     return xs, negpoints, luck, luck2
+    
+clock = pygame.time.Clock()
 
 #Start menu screen
 def intro():
     fontsize = 30
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    game_loop()
-                    
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                
+    done = False
+    
+    while not done:
+        
         screen.fill(BLACK)
         if fontsize > 50:
             fontsize = 30
@@ -144,18 +142,23 @@ def intro():
         
         # Pause
         clock.tick(30)
-
-#Game Over screen
-def gameover():
-    while True:
+        
         for event in pygame.event.get():
- 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    done= True
                     game_loop()
                     
                 if event.key == pygame.K_ESCAPE:
-                    intro()
+                    done = True
+        
+        
+    
+    
+#Game Over screen
+def gameover():
+    over = False
+    while not over:
                 
         font = pygame.font.SysFont(None, 50)
         text = font.render("Game Over", True, (255,0,0))
@@ -174,8 +177,19 @@ def gameover():
         
         # Pause
         clock.tick(30)
-
-clock = pygame.time.Clock()
+        
+        for event in pygame.event.get():
+ 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    over = True
+                    game_loop()
+                    
+                if event.key == pygame.K_ESCAPE:
+                    over = True
+                    intro()           
+        
+        
 
 
 def game_loop():
@@ -212,29 +226,6 @@ def game_loop():
     
     gameExit = False
     while not gameExit:
-        
-        for event in pygame.event.get():
-            
-            if event.type == pygame.QUIT:
-                gameExit = True
-     
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    left_change = -0.02*display_width
-                    
-                if event.key == pygame.K_RIGHT:
-                    right_change = 0.02*display_width
-                
-                if event.key == pygame.K_ESCAPE:
-                    intro()
-            
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT:
-                    left_change = 0
-                    
-                if event.key == pygame.K_RIGHT:
-                    right_change = 0
 
         #Set up Screen boundary limits    
         if x > (display_width - snake_width):
@@ -255,7 +246,7 @@ def game_loop():
             if ( smallblock_width > x - (xb - snake_width) > 0):
                 scor += point
                 xb = random.randrange(0, 5)*block_width + block_width/2
-                ybb = -100
+                ybb = -1*random.randrange(100, 400)
                 point = random.randrange(1, 5)
                 if block_height >= ybb - max(yb) >= -smallblock_height :
                     ybb -= 100
@@ -263,7 +254,7 @@ def game_loop():
             if (-smallblock_width < x - (xb + smallblock_width) < 0):
                 scor += point
                 xb = random.randrange(0, 5)*block_width + block_width/2
-                ybb = -100
+                ybb = -1*random.randrange(100, 400)
                 point = random.randrange(1, 5)
                 if block_height >= ybb - max(yb) >= -smallblock_height :
                     ybb -= 100
@@ -276,8 +267,8 @@ def game_loop():
                     negpoints[n] -= 1
                     totalscor += 1
                     scor -= 1
-                    yb -= 6
-                    ybb -= 6
+                    yb -= 6 +0.001*gamespeed 
+                    ybb -= 6 +0.001*gamespeed 
                 elif negpoints[n] == 0:
                     yb[n] = -300
 
@@ -299,7 +290,7 @@ def game_loop():
         #Make sure newly spawned smallblocks doesn't overlap with bigblocks    
         if ybb > display_height:
             xb = random.randrange(0, 5)*block_width + block_width/2
-            ybb = -100
+            ybb = -1*random.randrange(100, 400)
             point = random.randrange(1, 5)
             if block_height >= ybb - max(yb) >= -smallblock_height :
                 ybb -= 100
@@ -314,10 +305,7 @@ def game_loop():
             if -stick_width/2 - snake_width - 3< x - sx < 3 + stick_width/2:
                 yb -= 2 +0.001*gamespeed 
                 ybb -= 2 +0.001*gamespeed 
-        
-        #Go to gameover loop when score < 0
-        if scor < 0:
-            gameover()
+            
         
         #Update sprite positions
         x += left_change + right_change
@@ -340,13 +328,39 @@ def game_loop():
         if luck3 == 1:
             stick(sx, max(yb), stick_width, stick_height)
         
-        
         # Flip screen
         pygame.display.flip()
         
         # Pause
         clock.tick(90)
-    pygame.quit()
+        
+        #Go to gameover loop when score < 0
+        if scor <= 0:
+            gameExit = True
+            gameover()
+        
+        for event in pygame.event.get():
+     
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    left_change = -0.02*display_width
+                    
+                if event.key == pygame.K_RIGHT:
+                    right_change = 0.02*display_width
+                
+                if event.key == pygame.K_ESCAPE:
+                    gameExit = True
+                    intro()
+            
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT:
+                    left_change = 0
+                    
+                if event.key == pygame.K_RIGHT:
+                    right_change = 0
+
+        
 
 #Start entire program by calling intro loop
 intro()
+pygame.quit()
