@@ -305,6 +305,11 @@ def game_loop():
             if -stick_width/2 - snake_width - 3< x - sx < 3 + stick_width/2:
                 yb -= 2 +0.001*gamespeed 
                 ybb -= 2 +0.001*gamespeed 
+        
+        #Go to gameover loop when score < 0
+        if scor < 0:
+            gameExit = True
+            gameover()
             
         
         #Update sprite positions
@@ -317,27 +322,23 @@ def game_loop():
             gamespeed += 0.5
         
         #Draw sprites and background
-        screen.fill(BLACK)
-        snake(x,y, snake_width, snake_height)
-        score(scor, x, y, snake_width, snake_height)         
-        layer(xs,list(yb), negpoints, luck, luck2)
-        smallblock(xb,ybb,smallblock_width,smallblock_height, point)
-        totalscore(totalscor)
+        if scor >= 0:    
+            screen.fill(BLACK)
+            snake(x,y, snake_width, snake_height)
+            score(scor, x, y, snake_width, snake_height)         
+            layer(xs,list(yb), negpoints, luck, luck2)
+            smallblock(xb,ybb,smallblock_width,smallblock_height, point)
+            totalscore(totalscor)
         
-        #Update stick parameters
-        if luck3 == 1:
-            stick(sx, max(yb), stick_width, stick_height)
+            #Update stick parameters
+            if luck3 == 1:
+                stick(sx, max(yb), stick_width, stick_height)
         
         # Flip screen
         pygame.display.flip()
         
         # Pause
         clock.tick(90)
-        
-        #Go to gameover loop when score < 0
-        if scor <= 0:
-            gameExit = True
-            gameover()
         
         for event in pygame.event.get():
      
