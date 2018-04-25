@@ -47,7 +47,12 @@ def smallblock(x,y, smallblock_width, smallblock_height, point):
     
 def block(x,y, block_width, block_height, point):
     thickness = 0
-    color= (point*5, 255-point*5, 0)
+    if point < 16:
+        color = (0, 255, 255-point*16)
+    elif 16 <= point < 32:
+        color = ((point-16)*16, 255, 0)
+    elif point >= 32:
+        color= (255, 255-(point-32)*15, 0)
     pygame.draw.rect(screen, color, (x,y,block_width, block_height), thickness)
     font = pygame.font.SysFont(None, 50)
     text = font.render(str(point), True, BLACK)
@@ -100,8 +105,8 @@ def layerpara(totalscor):
     lowercap = int(totalscor/2)+1
     if uppercap >= 50:
         uppercap = 50
-    if lowercap >= 10:
-        lowercap = 10
+    if lowercap >= 5:
+        lowercap = 5
         
     for i in range(len(xs)):
         negpoints.append(random.randrange(lowercap, uppercap))
