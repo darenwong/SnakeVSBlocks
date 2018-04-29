@@ -11,7 +11,7 @@ RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 
 # Set the width and height of screen
-display_height = 300
+display_height = 400
 display_width = 300
 
 
@@ -85,12 +85,14 @@ def score(count, x, y, snake_width, snake_height):
     textsize.center = (snake_width/2+x, snake_height/2+y)
     screen.blit(text,textsize)
 
-def stickpara(block_width):
+def stickpara(block_width, setlength):
     stick_width = 6
-    stick_height = random.randrange(150,200)
+    stick_height = random.randrange(100,200)
+    if setlength == 0:
+        stick_height += 50
     sx = random.randrange(1,5)*block_width - stick_width/2
     luck3 = 0
-    if random.randrange(0,2) == 1:
+    if random.randrange(0,3) >= 1:
         luck3 = 1
     return stick_width, stick_height, sx, luck3
     
@@ -156,8 +158,6 @@ def intro():
                     
                 if event.key == pygame.K_ESCAPE:
                     done = True
-        
-        
     
     
 #Game Over screen
@@ -174,7 +174,7 @@ def gameover():
         font1 = pygame.font.SysFont(None, 30)
         text1 = font1.render("Press Spacebar to play again", True, (255,140,0))
         textsize1 = text1.get_rect()
-        textsize1.center = (display_width/2, display_height/2)
+        textsize1.center = (display_width/2, 4*display_height/5)
         screen.blit(text1,textsize1)
         
         # Flip screen
@@ -193,8 +193,7 @@ def gameover():
                 if event.key == pygame.K_ESCAPE:
                     over = True
                     intro()           
-        
-        
+
 
 
 def game_loop():
@@ -203,12 +202,13 @@ def game_loop():
     scor = 10
     totalscor = 0
     point = random.randrange(1, 5)
+    point1 = random.randrange(3, 6)
     
     #Initialise snake parameters
     snake_width = 25
     snake_height = 25
     x = 0.5*display_width
-    y = 0.8*display_height
+    y = 2*display_height/3
     left_change = 0
     right_change = 0
     
@@ -218,16 +218,19 @@ def game_loop():
     xs, negpoints, luck, luck2 = layerpara(totalscor)
     yb = np.zeros(len(xs)).astype('float64')
     
+    
     #Initialise Smallblock parameters
     smallblock_width = 15
     smallblock_height = 15
     xb = random.randrange(0, 5)*block_width + block_width/2
     ybb = -1*random.randrange(100, 400)
+    xb1 = random.randrange(0, 5)*block_width + block_width/2
+    ybb1 = -1*random.randrange(100, 400)
     
     #Initialise stick parameters
-    stick_width, stick_height, sx, luck3 = stickpara(block_width)
-    
-
+    stick_width, stick_height, sx, luck3 = stickpara(block_width, 0)
+    stick_width1, stick_height1, sx1, luck31 = stickpara(block_width, 1)
+    sy1 = max(yb) - random.randrange(50, 100) - stick_height1
     
     gameExit = False
     while not gameExit:
@@ -242,28 +245,63 @@ def game_loop():
         if (4 >= (ybb + smallblock_height) - y >= 0) and ((xb-snake_width <= x) and (x <= xb+smallblock_width)):
             scor += point
             xb = random.randrange(0, 5)*block_width + block_width/2
-            ybb = -100
+            ybb = -1*random.randrange(100, 400)
+            if xb == xb1 and abs(ybb - ybb1) < 2*smallblock_height:
+                ybb -= 4*smallblock_height
             point = random.randrange(1, 5)
-            if block_height >= ybb - max(yb) >= -smallblock_height :
+            if smallblock_height + block_height >= ybb - max(yb) >= -2*smallblock_height :
                 ybb -= 100
+        if (4 >= (ybb1 + smallblock_height) - y >= 0) and ((xb1-snake_width <= x) and (x <= xb1+smallblock_width)):
+            scor += point1
+            xb1 = random.randrange(0, 5)*block_width + block_width/2
+            ybb1 = -1*random.randrange(100, 400)
+            if xb1 == xb and abs(ybb - ybb1) < 2*smallblock_height:
+                ybb1 -= 4*smallblock_height
+            point1 = random.randrange(1, 5)
+            if smallblock_height + block_height >= ybb1 - max(yb) >= -2*smallblock_height :
+                ybb1 -= 100
                 
         if (ybb + smallblock_height) > y and (y+snake_height > ybb):
             if ( smallblock_width > x - (xb - snake_width) > 0):
                 scor += point
                 xb = random.randrange(0, 5)*block_width + block_width/2
                 ybb = -1*random.randrange(100, 400)
+                if xb == xb1 and abs(ybb - ybb1) < 2*smallblock_height:
+                    ybb -= 4*smallblock_height
                 point = random.randrange(1, 5)
-                if block_height >= ybb - max(yb) >= -smallblock_height :
+                if smallblock_height + block_height >= ybb - max(yb) >= -2*smallblock_height :
                     ybb -= 100
                   
             if (-smallblock_width < x - (xb + smallblock_width) < 0):
                 scor += point
                 xb = random.randrange(0, 5)*block_width + block_width/2
                 ybb = -1*random.randrange(100, 400)
+                if xb == xb1 and abs(ybb - ybb1) < 2*smallblock_height:
+                    ybb -= 4*smallblock_height
                 point = random.randrange(1, 5)
-                if block_height >= ybb - max(yb) >= -smallblock_height :
+                if smallblock_height + block_height >= ybb - max(yb) >= -2*smallblock_height :
                     ybb -= 100
         
+        if (ybb1 + smallblock_height) > y and (y+snake_height > ybb1):
+            if ( smallblock_width > x - (xb1 - snake_width) > 0):
+                scor += point1
+                xb1 = random.randrange(0, 5)*block_width + block_width/2
+                ybb1 = -1*random.randrange(100, 400)
+                if xb1 == xb and abs(ybb - ybb1) < 2*smallblock_height:
+                    ybb1 -= 4*smallblock_height
+                point1 = random.randrange(1, 5)
+                if smallblock_height + block_height >= ybb1 - max(yb) >= -2*smallblock_height:
+                    ybb1 -= 100
+                  
+            if (-smallblock_width < x - (xb1 + smallblock_width) < 0):
+                scor += point1
+                xb1 = random.randrange(0, 5)*block_width + block_width/2
+                ybb1 = -1*random.randrange(100, 400)
+                if xb1 == xb and abs(ybb - ybb1) < 2*smallblock_height:
+                    ybb1 -= 4*smallblock_height
+                point1 = random.randrange(1, 5)
+                if smallblock_height + block_height >= ybb1 - max(yb) >= -2*smallblock_height :
+                    ybb1 -= 100
         
         for n, i in enumerate(xs):
             #Make sure newly spawned bigblocks doesn't overlap with smallblocks
@@ -272,8 +310,10 @@ def game_loop():
                     negpoints[n] -= 1
                     totalscor += 1
                     scor -= 1
-                    yb -= 6 +0.001*gamespeed 
-                    ybb -= 6 +0.001*gamespeed 
+                    yb -= 6 +0.003*gamespeed 
+                    ybb -= 6 +0.003*gamespeed
+                    ybb1 -= 6 +0.003*gamespeed
+                    sy1 -= 6 +0.003*gamespeed
                 elif negpoints[n] == 0:
                     yb[n] = -300
 
@@ -284,21 +324,44 @@ def game_loop():
                 if (-block_width < x - (i*block_width + block_width) < 0):
                     left_change = 0
         
-        #Make sure newly spawned bigblocks doesn't overlap with smallblocks
+        #Make sure newly spawned bigblocks and stick doesn't overlap with smallblocks
         if max(yb) > display_height:
             xs, negpoints, luck, luck2 = layerpara(totalscor)
-            stick_width, stick_height, sx, luck3 = stickpara(block_width)
-            yb.fill(-100)
-            if block_height >= ybb - max(yb) >= -smallblock_height :
-                yb -= 100
-            
+            stick_width, stick_height, sx, luck3 = stickpara(block_width, 0)
+            if sx == sx1:
+                sx = random.randrange(1,5)*block_width - stick_width/2
+            yb.fill(-stick_height)
+            if block_height >= ybb - max(yb) >= -smallblock_height or block_height >= ybb1 - max(yb) >= -smallblock_height :
+                yb -= 150
+        
+        #Make sure newly spawned stick doesn't overlap with smallblocks
+        if sy1 > display_height:
+            stick_width1, stick_height1, sx1, luck31 = stickpara(block_width, 1)
+            if sx1 == sx:
+                sx1 = random.randrange(1,5)*block_width - stick_width/2
+            if max(yb) < 0:
+                sy1 = max(yb) - random.randrange(100, 200) - stick_height1
+            if max(yb) >= 0:
+                sy1 = -stick_height1
+                
         #Make sure newly spawned smallblocks doesn't overlap with bigblocks    
         if ybb > display_height:
             xb = random.randrange(0, 5)*block_width + block_width/2
             ybb = -1*random.randrange(100, 400)
+            if xb == xb1 and abs(ybb - ybb1) < 2*smallblock_height:
+                ybb -= 4*smallblock_height
             point = random.randrange(1, 5)
-            if block_height >= ybb - max(yb) >= -smallblock_height :
-                ybb -= 100
+            if smallblock_height + block_height >= ybb - max(yb) >= -2*smallblock_height :
+                ybb -= 100 
+                
+        if ybb1 > display_height:
+            xb1 = random.randrange(0, 5)*block_width + block_width/2
+            ybb1 = -1*random.randrange(100, 400)
+            if xb1 == xb and abs(ybb - ybb1) < 2*smallblock_height:
+                ybb1 -= 4*smallblock_height
+            point1 = random.randrange(1, 5)
+            if smallblock_height + block_height >= ybb1 - max(yb) >= -2*smallblock_height :
+                ybb1 -= 100
                 
         #Adding boundary limits to sticks
         if (max(yb) + stick_height) > y and (y+snake_height > max(yb)) and luck3 ==1:
@@ -309,7 +372,20 @@ def game_loop():
         if 4 >= (max(yb) + stick_height) - y >= 0 and luck3 ==1:
             if -stick_width/2 - snake_width - 3< x - sx < 3 + stick_width/2:
                 yb -= 2 +0.001*gamespeed 
-                ybb -= 2 +0.001*gamespeed 
+                ybb -= 2 +0.001*gamespeed
+                ybb1 -= 2 +0.001*gamespeed
+                sy1 -= 2 +0.001*gamespeed
+        if (sy1 + stick_height1) > y and (y+snake_height > sy1) and luck31 ==1:
+            if ( stick_width1 > x - (sx1 - snake_width) > 0):
+                right_change = 0
+            if (-stick_width1 < x - (sx1 + stick_width1) < 0):
+                left_change = 0
+        if 4 >= (sy1 + stick_height1) - y >= 0 and luck31 ==1:
+            if -stick_width1/2 - snake_width - 3< x - sx1 < 3 + stick_width1/2:
+                yb -= 2 +0.001*gamespeed 
+                ybb -= 2 +0.001*gamespeed
+                ybb1 -= 2 +0.001*gamespeed
+                sy1 -= 2 +0.001*gamespeed
         
         #Go to gameover loop when score < 0
         if scor < 0:
@@ -321,6 +397,8 @@ def game_loop():
         x += left_change + right_change
         yb += 2 +0.001*gamespeed 
         ybb += 2 +0.001*gamespeed 
+        ybb1 += 2 +0.001*gamespeed
+        sy1 += 2 +0.001*gamespeed
         
         #Set Upper gamespeed limit
         if gamespeed < 2000:
@@ -333,11 +411,14 @@ def game_loop():
             score(scor, x, y, snake_width, snake_height)         
             layer(xs,list(yb), negpoints, luck, luck2)
             smallblock(xb,ybb,smallblock_width,smallblock_height, point)
+            smallblock(xb1,ybb1,smallblock_width,smallblock_height, point1)
             totalscore(totalscor)
         
             #Update stick parameters
             if luck3 == 1:
                 stick(sx, max(yb), stick_width, stick_height)
+            if luck31 == 1:
+                stick(sx1, sy1, stick_width1, stick_height1)
         
         # Flip screen
         pygame.display.flip()
@@ -366,7 +447,6 @@ def game_loop():
                     right_change = 0
 
         
-
 #Start entire program by calling intro loop
 intro()
 pygame.quit()
