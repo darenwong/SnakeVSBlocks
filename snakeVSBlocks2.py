@@ -109,41 +109,13 @@ def stickpara(block_width):
     if random.randrange(0,3) >= 1:
         luck3 = 1
     return stick_width, stick_height, sx, luck3 
-
-def stickcoll(sx, sy, stick_height, sx1, sy1, stick_height1, sx2, sy2, stick_height2, sx3, sy3, stick_height3):
-    if sx == sx1 or sx == sx2 or sx == sx3 :
-        a = [57, 117, 177, 237]
-        a.remove(sx1)
-        if sx2 in a:
-            a.remove(sx2)
-        if sx3 in a:
-            a.remove(sx3)
-        sx = random.choice(a)
-    return sx
-   
-def smallblockcoll(xb, ybb, xb1, ybb1, xb2, ybb2):
-    if xb == xb1 and ybb == ybb1:
-         a = [30,90,150,210,270]
-         a.remove(xb1)
-         if xb2 in a:
-             a.remove(xb2)
-         xb = random.choice(a)
-
-    if xb == xb2 and ybb == ybb2:
-         a = [30,90,150,210,270]
-         a.remove(xb1)
-         if xb2 in a:
-             a.remove(xb2)
-         xb = random.choice(a)
-
-    return xb
     
-def layerpara2(totalscor, layertype):
+def layerpara2(totalscor, layertype, scor):
     xs = [0,1,2,3,4]
     negpoints=[]
     lucknum = []
     uppercap = totalscor + 15
-    lowercap = int(totalscor/2)+1
+    lowercap = int(scor/2)
     if uppercap >= 50:
         uppercap = 50
     if lowercap >= 10:
@@ -161,13 +133,37 @@ def layerpara2(totalscor, layertype):
             lucknum.append(luck)
             negpoints[luck] = 0
     
-    elif layertype == 0 and random.randrange(0,2) == 0:
+    if layertype == 0:
         luck = random.randrange(0,5)
-        lucknum.append(luck)
-        negpoints[luck] = 0
-            
+        if random.randrange(0,2) == 0:
+            lucknum.append(luck)
+            negpoints[luck] = 0
+        else:
+            negpoints[luck] = random.randrange(int(scor/2)+1, scor+2)
     return xs, negpoints, lucknum
 
+#Check if newly spawned stick and small blocks overlaps with pre-existing ones
+def stickcoll(sx, sy, stick_height, sx1, sy1, stick_height1, sx2, sy2, stick_height2, sx3, sy3, stick_height3):
+    if sx == sx1 or sx == sx2 or sx == sx3 :
+        a = [57, 117, 177, 237]
+        a.remove(sx1)
+        if sx2 in a:
+            a.remove(sx2)
+        if sx3 in a:
+            a.remove(sx3)
+        sx = random.choice(a)
+    return sx
+   
+def smallblockcoll(xb, ybb, xb1, ybb1, xb2, ybb2):
+    if xb == xb1 or xb == xb2:
+         a = [30,90,150,210,270]
+         a.remove(xb1)
+         if xb2 in a:
+             a.remove(xb2)
+         xb = random.choice(a)
+    return xb
+    
+#Set how every sprites move  
 def move(yb, yb1, yb2, yb3, yb4, yb5, ybb, ybb1, ybb2, sy, sy1, sy2, sy3, gamespeed,step, multiplier):
     yb -= step + multiplier*gamespeed
     yb1 -= step + multiplier*gamespeed
@@ -339,17 +335,17 @@ def game_loop():
     block_width = 60
     block_height = 60
     stickupperlim = 4*block_height
-    xs, negpoints, lucknum = layerpara2(totalscor, 0)
+    xs, negpoints, lucknum = layerpara2(totalscor, 0, scor)
     yb = -stickupperlim + np.zeros(len(xs)).astype('float64')
-    xs1, negpoints1, lucknum1 = layerpara2(totalscor,1)
+    xs1, negpoints1, lucknum1 = layerpara2(totalscor,1, scor)
     yb1 = -stickupperlim + np.zeros(len(xs1)).astype('float64') - display_height/4
-    xs2, negpoints2, lucknum2 = layerpara2(totalscor,1)
+    xs2, negpoints2, lucknum2 = layerpara2(totalscor,1, scor)
     yb2 = -stickupperlim + np.zeros(len(xs2)).astype('float64') - display_height*2/4
-    xs3, negpoints3, lucknum3 = layerpara2(totalscor, 0)
+    xs3, negpoints3, lucknum3 = layerpara2(totalscor, 0, scor)
     yb3 = -stickupperlim + np.zeros(len(xs3)).astype('float64') - display_height*3/4
-    xs4, negpoints4, lucknum4 = layerpara2(totalscor, 1)
+    xs4, negpoints4, lucknum4 = layerpara2(totalscor, 1, scor)
     yb4 = -stickupperlim + np.zeros(len(xs4)).astype('float64') - display_height
-    xs5, negpoints5, lucknum5 = layerpara2(totalscor, 1)
+    xs5, negpoints5, lucknum5 = layerpara2(totalscor, 1, scor)
     yb5 = -stickupperlim + np.zeros(len(xs5)).astype('float64') - display_height*5/4
 
     
@@ -379,8 +375,7 @@ def game_loop():
     
     gameExit = False
     while not gameExit:
-#        print(xb1, xb2)
-#        print(sx, sx1, sx2, sx3, sy, sy1, sy2, sy3, stick_height, stick_height1, stick_height2, stick_height3)
+
         xt = pygame.mouse.get_pos()[0]
         #Set up Screen boundary limits    
         if xt > (display_width - snake_width):
@@ -410,7 +405,7 @@ def game_loop():
                             xt = ((i+1)*block_width - snake_width)
         
             if max(yb) > display_height:
-                xs, negpoints, lucknum = layerpara2(totalscor, 0)
+                xs, negpoints, lucknum = layerpara2(totalscor, 0, scor)
                 yb.fill(-stickupperlim)
 #                
         if max(yb1) > y - block_height:            
@@ -434,7 +429,7 @@ def game_loop():
                             xt = ((i+1)*block_width - snake_width)
         
             if max(yb1) > display_height:
-                xs1, negpoints1, lucknum1 = layerpara2(totalscor, 1)
+                xs1, negpoints1, lucknum1 = layerpara2(totalscor, 1, scor)
                 yb1.fill(-stickupperlim)
         
         if max(yb2) > y - block_height:            
@@ -458,7 +453,7 @@ def game_loop():
                             xt = ((i+1)*block_width - snake_width)
         
             if max(yb2) > display_height:
-                xs2, negpoints2, lucknum2 = layerpara2(totalscor, 1)
+                xs2, negpoints2, lucknum2 = layerpara2(totalscor, 1, scor)
                 yb2.fill(-stickupperlim)
 
         if max(yb3) > y - block_height:            
@@ -482,7 +477,7 @@ def game_loop():
                             xt = ((i+1)*block_width - snake_width)
         
             if max(yb3) > display_height:
-                xs3, negpoints3, lucknum3 = layerpara2(totalscor, 0)
+                xs3, negpoints3, lucknum3 = layerpara2(totalscor, 0, scor)
                 yb3.fill(-stickupperlim)
 
         if max(yb4) > y - block_height:            
@@ -506,7 +501,7 @@ def game_loop():
                             xt = ((i+1)*block_width - snake_width)
         
             if max(yb4) > display_height:
-                xs4, negpoints4, lucknum4 = layerpara2(totalscor, 1)
+                xs4, negpoints4, lucknum4 = layerpara2(totalscor, 1, scor)
                 yb4.fill(-stickupperlim)
         
         if max(yb5) > y - block_height:            
@@ -530,7 +525,7 @@ def game_loop():
                             xt = ((i+1)*block_width - snake_width)
         
             if max(yb5) > display_height:
-                xs5, negpoints5, lucknum5 = layerpara2(totalscor, 1)
+                xs5, negpoints5, lucknum5 = layerpara2(totalscor, 1, scor)
                 yb5.fill(-stickupperlim)
         
 
@@ -667,7 +662,7 @@ def game_loop():
                 xb2 = random.randrange(0, 5)*block_width + block_width/2
                 ybb2 = toplayer + point_freq*block_height/2
                 xb2 = smallblockcoll(xb2, ybb2, xb, ybb, xb1, ybb1)
-    
+        
         if xt > x:
             x += 0.2*abs(x - xt)
         if xt < x:
@@ -679,7 +674,7 @@ def game_loop():
         
         yb, yb1, yb2, yb3, yb4, yb5, ybb, ybb1, ybb2, sy, sy1, sy2, sy3 = move(yb, yb1, yb2, yb3, yb4, yb5, ybb, ybb1, ybb2, sy, sy1, sy2, sy3, gamespeed, -2, -0.001)
                     
-                    
+              
         print('fps = ' + str(clock.get_fps()))
         screen.fill(BLACK)
         snake(x,y, snake_width, snake_height)
@@ -707,7 +702,7 @@ def game_loop():
             stick(sx3, sy3, stick_width3, stick_height3)
      
         
-#        Go to gameover loop when score < 0
+        #Go to gameover loop when score < 0
         if scor < 0:
             gameExit = True
             gameover()
